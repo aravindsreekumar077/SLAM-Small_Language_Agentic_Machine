@@ -1,2 +1,37 @@
 # DA_225o_DeepLearning_Project_Team3
 SLAM (Small Language Agentic Machine)
+
+## Local setup for the python virtual env
+
+```
+python3 -m venv DL-PROJECT
+source DL-PROJECT/bin/activate
+pip install -r requirements.txt
+
+```
+
+## Running the project
+
+### To run the streamlit app locally
+
+```
+cd UI
+streamlit run main.py
+```
+
+### To build and run the UI on docker container
+
+```
+
+docker build -f src/deploy/container-ui/Dockerfile -t slam-ui-app .
+docker run -p 8501:8501 slam-ui-app
+OPEN APP  : http://localhost:8501
+
+```
+
+### To run the entire project containers using docker-compose
+
+```
+cd src/deploy
+docker-compose up --build
+
