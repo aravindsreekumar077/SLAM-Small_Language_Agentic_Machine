@@ -8,3 +8,10 @@ services:
       - "8501:8501"
     environment:
       - PYTHONPATH=/app/src
+
+  fastapi-app:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app:/app
