@@ -15,7 +15,7 @@ pip install -r requirements.txt
 ### To run the streamlit app locally
 
 ```
-cd UI
+cd src/UI
 streamlit run main.py
 ```
 
