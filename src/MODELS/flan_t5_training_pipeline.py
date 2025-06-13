@@ -53,8 +53,15 @@ class MathDataset(Dataset):
         }
 
 # Load and split data
-df = pd.read_csv("/kaggle/input/mathdata/flan_t5_math_dataset_words_50k.csv")
-data = list(zip(df["input"], df["target"]))
+df1 = pd.read_csv("/kaggle/input/mathdata/flan_t5_math_dataset_words_50k.csv")
+df2 = pd.read_csv("/kaggle/input/input-actuall5/final_dataset.csv")
+df2 = df2.rename(columns={"Input": "input", "Actual": "target"})
+combined_df = pd.concat([df1, df2], ignore_index=True)
+
+data = list(zip("Simplify this prompt: "+ combined_df["input"], combined_df["target"]))
+
+
+
 
 # Train/validation split
 train_data, val_data = train_test_split(data, test_size=0.1, random_state=42)
@@ -75,7 +82,7 @@ peft_config = LoraConfig(
     r=16,  # Increased rank for better capacity
     lora_alpha=32,  # Increased alpha
     lora_dropout=0.1,
-    target_modules=["q", "v", "k", "o", "wi", "wo"]  # More comprehensive targeting
+    target_modules=["q", "v"]  # More comprehensive targeting
 )
 
 model = get_peft_model(model, peft_config)
@@ -105,15 +112,15 @@ val_dataset = MathDataset(val_data, tokenizer)
 # Enhanced training arguments
 training_args = TrainingArguments(
     output_dir="./flan-t5-math-lora-enhanced",
-    per_device_train_batch_size=16,
-    per_device_eval_batch_size=16,
+    per_device_train_batch_size=8,
+    per_device_eval_batch_size=8,
     num_train_epochs=5,
-    learning_rate=1e-4,
+    learning_rate=5e-5,
     warmup_steps=500,
     logging_dir="./logs",
     logging_steps=100,
-    eval_steps=500,
-    save_steps=1000,
+    eval_steps=300,
+    save_steps=900,
     eval_strategy="steps",  # Changed from evaluation_strategy
     save_strategy="steps",
     load_best_model_at_end=True,
@@ -149,50 +156,6 @@ trainer.train()
 # Save the LoRA adapter
 model.save_pretrained("./flan-t5-math-lora-final")
 
-# Enhanced inference function
-def enhanced_infer(input_text, max_length=50, num_beams=4):
-    model.eval()
-    device = next(model.parameters()).device
-
-    # Better input formatting
-    formatted_input = f"Answer this math problem: {input_text}"
-
-    input_ids = tokenizer(
-        formatted_input,
-        return_tensors="pt",
-        padding=True,
-        truncation=True,
-        max_length=128
-    ).input_ids.to(device)
-
-    with torch.no_grad():
-        output_ids = model.generate(
-            input_ids=input_ids,
-            max_length=max_length,
-            num_beams=num_beams,
-            early_stopping=True,
-            do_sample=False,
-            temperature=0.7,
-            pad_token_id=tokenizer.pad_token_id,
-            eos_token_id=tokenizer.eos_token_id,
-        )
-
-    return tokenizer.decode(output_ids[0], skip_special_tokens=True)
-
-# Test the enhanced model
-print("\n=== Enhanced Model Results ===")
-test_cases = [
-    "What is ten times ten?",
-    "Give me the product of four and 9",
-    "Multiply twelve by three",
-    "What is the sum of fifteen and twenty-seven?",
-    "Subtract eight from fifty-two"
-]
-
-for test_case in test_cases:
-    result = enhanced_infer(test_case)
-    print(f"Q: {test_case}")
-    print(f"A: {result}\n")
 
 # Gradient analysis function
 def analyze_gradients(model, sample_batch):
