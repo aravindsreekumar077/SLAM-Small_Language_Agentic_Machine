@@ -12,8 +12,8 @@ services:
   fastapi-app:
     build:
       context: ../..  # root of the project
-      dockerfile: src/deploy/container-ui/Dockerfile
+      dockerfile: src/deploy/container-backend/Dockerfile
     ports:
       - "8000:8000"
-    volumes:
-      - ./app:/app
+    environment:
+      - PYTHONPATH=/app/src
