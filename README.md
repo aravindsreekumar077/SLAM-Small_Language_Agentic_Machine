@@ -29,6 +29,16 @@ OPEN APP  : http://localhost:8501
 
 ```
 
+### To build and run the UI on docker container
+
+```
+
+docker build -f src/deploy/container-backend/Dockerfile -t slam-backend-app .
+docker run -p 8000:8000 slam-backend-app
+API request   : http://0.0.0.0:8000/ping
+
+```
+
 ### To run the entire project containers using docker-compose
 
 ```
